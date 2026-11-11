@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>teerak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300;1,500&family=Marck+Script&display=swap" rel="stylesheet">
+<style>
+:root{
+  --plum:#2a1620;
+  --wine:#5b1f2e;
+  --amber:#d98a3d;
+  --rust:#a8452b;
+  --cream:#f6e7d3;
+  --rose:#e8a2a0;
+  --ease:cubic-bezier(.22,.8,.24,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  color:var(--cream);
+  background:radial-gradient(120% 90% at 50% 0%,#4a1a28 0%,var(--plum) 55%,#170b11 100%) fixed;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body.locked{overflow:hidden}
+ 
+/* падающие листья */
+#leaves{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+ 
+/* ---------- ЭКРАН С КОДОМ ---------- */
+#gate{
+  position:fixed;inset:0;z-index:10;
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(90% 80% at 50% 30%,rgba(217,138,61,.22),transparent 60%);
+  transition:opacity 1.4s var(--ease),transform 1.4s var(--ease),visibility 1.4s;
+}
+#gate.leave{opacity:0;transform:scale(1.06);visibility:hidden}
+.card{
+  width:min(440px,100%);text-align:center;
+  padding:48px 36px 40px;
+  background:linear-gradient(160deg,rgba(246,231,211,.10),rgba(246,231,211,.03));
+  border:1px solid rgba(246,231,211,.22);
+  border-radius:28px;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 30px 80px rgba(0,0,0,.45);
+  animation:rise 1.6s var(--ease) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+.card h1{font-family:'Marck Script',cursive;font-weight:400;font-size:2.6rem;color:var(--amber);margin-bottom:10px}
+.card p{font-size:1.25rem;font-style:italic;font-weight:300;opacity:.9;margin-bottom:28px;line-height:1.4}
+.card input{
+  width:100%;padding:14px 18px;text-align:center;letter-spacing:.2em;
+  font:500 1.3rem 'Cormorant Garamond',serif;color:var(--cream);
+  background:rgba(0,0,0,.25);border:1px solid rgba(246,231,211,.3);border-radius:999px;outline:none;
+  transition:border-color .4s,box-shadow .4s;
+}
+.card input::placeholder{letter-spacing:.05em;opacity:.5}
+.card input:focus{border-color:var(--amber);box-shadow:0 0 0 4px rgba(217,138,61,.18)}
+.card button{
+  margin-top:16px;width:100%;padding:14px;cursor:pointer;
+  font:500 1.2rem 'Cormorant Garamond',serif;color:#2a1620;
+  background:linear-gradient(135deg,#f0b36a,var(--amber));
+  border:0;border-radius:999px;
+  transition:transform .4s var(--ease),box-shadow .4s;
+}
+.card button:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(217,138,61,.4)}
+.card button:focus-visible{outline:2px solid var(--cream);outline-offset:3px}
+#msg{min-height:1.6em;margin-top:16px;font-size:1.1rem;color:var(--rose);opacity:0;transform:translateY(-6px);transition:.5s var(--ease)}
+#msg.show{opacity:1;transform:none}
+.shake{animation:shake .5s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+ 
+/* ---------- ГЛАВНАЯ ---------- */
+#main{position:relative;z-index:2;opacity:0;visibility:hidden;transition:opacity 1.8s var(--ease) .5s}
+#main.show{opacity:1;visibility:visible}
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px}
+.hero h2{font-family:'Marck Script',cursive;font-weight:400;font-size:clamp(3rem,10vw,6.5rem);color:var(--amber);line-height:1.1;text-shadow:0 0 40px rgba(217,138,61,.35)}
+.hero p{margin-top:18px;font-size:clamp(1.2rem,3vw,1.6rem);font-style:italic;font-weight:300;max-width:34ch}
+.down{margin-top:48px;width:1px;height:70px;background:linear-gradient(var(--amber),transparent);animation:pulse 2.4s infinite}
+@keyframes pulse{50%{opacity:.25}}
+ 
+.block{max-width:1000px;margin:0 auto;padding:90px 24px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.block.flip .photo{order:2}
+.text h3{font-family:'Marck Script',cursive;font-weight:400;font-size:2.4rem;color:var(--rose);margin-bottom:16px}
+.text p{font-size:1.4rem;line-height:1.65;font-weight:300}
+ 
+.photo{
+  position:relative;aspect-ratio:4/5;border-radius:200px 200px 24px 24px;overflow:hidden;
+  border:1px solid rgba(246,231,211,.25);
+  box-shadow:0 30px 70px rgba(0,0,0,.5);
+  background:linear-gradient(160deg,var(--rust),var(--wine) 60%,var(--plum));
+}
+.photo::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(42,22,32,.45),transparent 50%);pointer-events:none}
+.photo img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.08);transition:transform 2.4s var(--ease)}
+.reveal.in .photo img{transform:scale(1)}
+.photo.empty::before{content:"🍂";position:absolute;inset:0;display:grid;place-items:center;font-size:4rem;opacity:.6}
+ 
+.reveal{opacity:0;transform:translateY(36px);transition:opacity 1.4s var(--ease),transform 1.4s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+ 
+.quote{max-width:760px;margin:0 auto;padding:60px 24px;text-align:center;font-size:clamp(1.6rem,4vw,2.3rem);font-style:italic;font-weight:300;line-height:1.5}
+ 
+/* ---------- СВЕТЯЩЕЕСЯ СЕРДЦЕ ---------- */
+.finale{padding:100px 24px 160px;text-align:center;overflow:hidden}
+.finale p{font-family:'Marck Script',cursive;font-size:2.4rem;color:var(--amber);margin-bottom:30px}
+.heart-wrap{position:relative;width:min(340px,78vw);margin:0 auto;padding:40px 0}
+.heart-wrap::before{ /* тёплое сияние позади */
+  content:"";position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,170,80,.38) 0%,rgba(217,138,61,.14) 38%,transparent 68%);
+  animation:halo 4.5s ease-in-out infinite;pointer-events:none}
+.heart-wrap svg{position:relative;width:100%;height:auto;overflow:visible;animation:float 6s ease-in-out infinite}
+.h-halo{fill:#ffa84f;filter:blur(14px);opacity:.55;animation:breathe 3.2s ease-in-out infinite;transform-origin:50% 50%}
+.h-fill{fill:url(#glass)}
+.h-inner{fill:none;stroke:rgba(255,214,160,.35);stroke-width:1.2;transform-origin:100px 85px;transform:scale(.9)}
+.h-edge{fill:none;stroke:url(#edge);stroke-width:3.4;stroke-linejoin:round;filter:url(#glow);animation:edge 3.2s ease-in-out infinite}
+.h-shine{fill:none;stroke:rgba(255,255,255,.75);stroke-width:2.4;stroke-linecap:round;filter:blur(.6px);opacity:.8}
+.h-core{fill:#ffd9a0;filter:blur(10px);opacity:.7;animation:breathe 3.2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes halo{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(.95)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.8}}
+@keyframes edge{0%,100%{stroke-width:3;opacity:.85}50%{stroke-width:4.2;opacity:1}}
+.dust{position:absolute;border-radius:50%;background:radial-gradient(circle,#ffe2b0,rgba(255,170,80,0) 70%);opacity:0;pointer-events:none;animation:dust linear infinite}
+@keyframes dust{0%{opacity:0;transform:translate(0,0) scale(.5)}20%{opacity:.95}70%{opacity:.6}100%{opacity:0;transform:translate(var(--dx),-260px) scale(1.1)}}
+ 
+@media (max-width:760px){
+  .block{grid-template-columns:1fr;gap:32px;padding:60px 24px}
+  .block.flip .photo{order:0}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  
+}
+</style>
+</head>
+<body class="locked">
+
+<canvas id="leaves"></canvas>
+
+<!-- ЭКРАН ВВОДА КОДА -->
+<section id="gate">
+  <div class="card" id="card">
+    <h1>Teerak,</h1>
+    <p>введи таймкод из "молодых монархов"<br>(в письме)</p>
+    <input id="code" type="password" inputmode="text" autocomplete="off" placeholder="таймкод" aria-label="Код">
+    <button id="go">Открыть</button>
+    <div id="msg" role="alert"></div>
+  </div>
+</section>
+
+<!-- ГЛАВНАЯ СТРАНИЦА -->
+<main id="main">
+  <section class="hero">
+    <h2>Прочитай<br>после всего</h2>
+    <p>Мне тоже страшно ^.^</p>
+    <div class="down"></div>
+  </section>
+
+  <section class="block reveal">
+    <div class="photo"><img src="photos/1.jpeg" alt="первая"></div>
+    <div class="text">
+      <p>
+	  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  </p>
+    </div>
+  </section>
+
+  <section class="block flip reveal">
+    <div class="photo"><img src="photos/2.jpeg" alt="вторая"></div>
+    <div class="text">
+      <h3>Тёплые вечера</h3>
+      <p>!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+    </div>
+  </section>
+
+  <section class="block reveal">
+    <div class="photo"><img src="photos/3.jpeg" alt="третия"></div>
+    <div class="text">
+      <h3>Всё впереди</h3>
+      <p>!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</p>
+    </div>
+  </section>
+
+<section class="finale reveal" id="finale">
+    <p>от тебя ничего не требуется <br>просто обдумай всё, не принимай поспешных решений <br>каков соблаз и страх ни был бы, <br>пожалуйста, просто поговори со мной</p>
+    <div class="heart-wrap" id="heartWrap">
+      <svg viewBox="0 0 200 180" aria-label="Светящееся сердце">
+        <defs>
+          <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffb66b" stop-opacity=".10"/>
+            <stop offset=".6" stop-color="#ff9d4d" stop-opacity=".22"/>
+            <stop offset="1" stop-color="#ffd9a0" stop-opacity=".7"/>
+          </linearGradient>
+          <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffe9c4"/><stop offset=".6" stop-color="#ffb066"/><stop offset="1" stop-color="#fff2d6"/>
+          </linearGradient>
+          <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="b1"/>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="b2"/>
+            <feMerge><feMergeNode in="b1"/><feMergeNode in="b2"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path class="h-halo" d="M100 158 C58 126 20 98 20 60 C20 32 40 16 62 16 C82 16 94 28 100 42 C106 28 118 16 138 16 C160 16 180 32 180 60 C180 98 142 126 100 158Z"/>
+        <path class="h-fill" d="M100 158 C58 126 20 98 20 60 C20 32 40 16 62 16 C82 16 94 28 100 42 C106 28 118 16 138 16 C160 16 180 32 180 60 C180 98 142 126 100 158Z"/>
+        <ellipse class="h-core" cx="100" cy="140" rx="22" ry="12"/>
+        <path class="h-inner" d="M100 158 C58 126 20 98 20 60 C20 32 40 16 62 16 C82 16 94 28 100 42 C106 28 118 16 138 16 C160 16 180 32 180 60 C180 98 142 126 100 158Z"/>
+        <path class="h-edge" d="M100 158 C58 126 20 98 20 60 C20 32 40 16 62 16 C82 16 94 28 100 42 C106 28 118 16 138 16 C160 16 180 32 180 60 C180 98 142 126 100 158Z"/>
+        <path class="h-shine" d="M34 56 C34 40 46 28 62 28"/>
+      </svg>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ====== ВАШ КОД ДОСТУПА — измените здесь ====== */
+const SECRET = "37:34";
+/* =============================================== */
+
+const gate = document.getElementById('gate');
+const card = document.getElementById('card');
+const input = document.getElementById('code');
+const msg = document.getElementById('msg');
+const main = document.getElementById('main');
+ 
+function say(t){ msg.textContent = t; msg.classList.add('show'); }
+ 
+function check(){
+  const v = input.value.trim().toLowerCase();
+  if(!v){ say('Введи код, пожалуйста.'); return; }
+  if(v === SECRET.toLowerCase()){
+    msg.classList.remove('show');
+    gate.classList.add('leave');
+    setTimeout(()=>{
+      document.body.classList.remove('locked');
+      main.classList.add('show');
+      window.scrollTo(0,0);
+      observe();
+    }, 700);
+  } else {
+    say('Код неверный. Попробуй ещё раз.');
+    card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    input.select();
+  }
+}
+document.getElementById('go').addEventListener('click', check);
+input.addEventListener('keydown', e => { if(e.key === 'Enter') check(); });
+input.addEventListener('input', () => msg.classList.remove('show'));
+ 
+/* фото: если файла нет — показываем осенний фон с листком */
+document.querySelectorAll('.photo img').forEach(img=>{
+  img.addEventListener('error', ()=>{ img.style.display='none'; img.parentElement.classList.add('empty'); });
+});
+ 
+/* плавное появление при прокрутке */
+function observe(){
+  const io = new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.2});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+}
+ 
+/* золотистые искорки вокруг сердца */
+(function(){
+  const w = document.getElementById('heartWrap');
+  for(let i=0;i<26;i++){
+    const d = document.createElement('span'), z = 3+Math.random()*7;
+    d.className='dust';
+    d.style.width=d.style.height=z+'px';
+    d.style.left=(Math.random()*110-5)+'%';
+    d.style.top=(35+Math.random()*60)+'%';
+    d.style.setProperty('--dx',(Math.random()*70-35)+'px');
+    d.style.animationDuration=(5+Math.random()*6)+'s';
+    d.style.animationDelay=(-Math.random()*9)+'s';
+    w.appendChild(d);
+  }
+})();
+ 
+/* падающие листья */
+(function(){
+  const c = document.getElementById('leaves'), ctx = c.getContext('2d');
+  const colors = ['#d98a3d','#a8452b','#c4622d','#e8a65a','#8e3b2a','#e8a2a0'];
+  let W,H,leaves=[];
+  function resize(){ W=c.width=innerWidth; H=c.height=innerHeight; }
+  resize(); addEventListener('resize',resize);
+  const N = innerWidth<700 ? 22 : 38;
+  for(let i=0;i<N;i++) leaves.push(make(true));
+  function make(init){
+    return {x:Math.random()*W, y:init?Math.random()*H:-30, s:8+Math.random()*14,
+      vy:.5+Math.random()*1.1, vx:(Math.random()-.5)*.6, r:Math.random()*6.28,
+      vr:(Math.random()-.5)*.03, sw:Math.random()*6.28, col:colors[(Math.random()*colors.length)|0],
+      a:.35+Math.random()*.5};
+  }
+  function leaf(l){
+    ctx.save(); ctx.translate(l.x,l.y); ctx.rotate(l.r); ctx.globalAlpha=l.a; ctx.fillStyle=l.col;
+    ctx.beginPath();
+    ctx.moveTo(0,-l.s);
+    ctx.bezierCurveTo(l.s*.9,-l.s*.4,l.s*.7,l.s*.6,0,l.s);
+    ctx.bezierCurveTo(-l.s*.7,l.s*.6,-l.s*.9,-l.s*.4,0,-l.s);
+    ctx.fill();
+    ctx.strokeStyle='rgba(42,22,32,.35)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,-l.s); ctx.lineTo(0,l.s); ctx.stroke();
+    ctx.restore();
+  }
+  function tick(){
+    ctx.clearRect(0,0,W,H);
+    leaves.forEach((l,i)=>{
+      l.sw+=.02; l.x+=l.vx+Math.sin(l.sw)*.7; l.y+=l.vy; l.r+=l.vr;
+      if(l.y>H+30||l.x<-40||l.x>W+40) leaves[i]=make(false);
+      leaf(l);
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
